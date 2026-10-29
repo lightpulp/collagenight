@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { Cormorant_Garamond, Jost } from 'next/font/google';
 import { ALLOWED_TYPES, EVENT_NAME, MAX_FILE_BYTES, MAX_PHOTOS, STUDENT_ID_REGEX } from '@/lib/config';
+
+const display = Cormorant_Garamond({ subsets: ['latin'], weight: ['500', '600', '700'], style: ['normal', 'italic'] });
+const body = Jost({ subsets: ['latin'], weight: ['400', '500', '600'] });
 
 type Status = 'queued' | 'uploading' | 'done' | 'error';
 interface Item {
@@ -58,6 +62,22 @@ function putFile(url: string, file: File, onProgress: (p: number) => void): Prom
     xhr.onerror = () => reject(new Error('Network problem during upload.'));
     xhr.send(file);
   });
+}
+
+const GOLD_BTN =
+  'w-full rounded-full bg-gradient-to-b from-[#f0d595] to-[#c9993f] px-6 py-3 text-base font-semibold text-[#2a0a10] transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60 disabled:opacity-50';
+const INPUT =
+  'w-full rounded-lg border border-[#d9b26a]/35 bg-black/40 px-3 py-3 text-base text-[#f4e9d8] outline-none placeholder:text-[#f4e9d8]/35 focus:border-[#e8c77f] focus:ring-2 focus:ring-[#e8c77f]/30';
+
+function Ornament() {
+  return (
+    <svg viewBox="0 0 220 16" className="mx-auto h-3 w-44" aria-hidden="true">
+      <path d="M0 8h88M132 8h88" stroke="#d9b26a" strokeWidth="1" opacity=".7" />
+      <path d="M110 1l7 7-7 7-7-7z" fill="none" stroke="#e8c77f" strokeWidth="1.2" />
+      <circle cx="94" cy="8" r="1.5" fill="#e8c77f" />
+      <circle cx="126" cy="8" r="1.5" fill="#e8c77f" />
+    </svg>
+  );
 }
 
 export default function UploadPage() {
@@ -228,165 +248,192 @@ export default function UploadPage() {
   const queuedCount = items.filter((i) => i.status === 'queued' || i.status === 'error').length;
 
   return (
-    <main className="mx-auto min-h-screen max-w-xl px-4 py-6">
-      <Link href="/" className="text-sm text-neutral-300 underline">
-        Back to photos
-      </Link>
-      <h1 className="mt-3 text-3xl font-bold">{EVENT_NAME}</h1>
-      <p className="mt-1 text-neutral-300">Upload up to {MAX_PHOTOS} photos per student.</p>
+    <main
+      className={`${body.className} relative min-h-screen bg-[#0b0507] text-[#f4e9d8]`}
+      style={{
+        backgroundImage:
+          'radial-gradient(ellipse 80% 40% at 50% 0%,rgba(190,25,50,.5),transparent 70%)',
+      }}
+    >
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col px-5 pb-8 pt-6">
+        <Link
+          href="/"
+          className="w-fit text-sm text-[#f4e9d8]/75 underline decoration-[#d9b26a]/60 underline-offset-4 hover:text-[#f4e9d8]"
+        >
+          Back to photos
+        </Link>
 
-      {!student ? (
-        <form onSubmit={register} className="mt-6 space-y-4">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">Full name</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-3 text-base outline-none focus:border-[#f5c542]"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">Student ID</span>
-            <input
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-              placeholder="24-2157-703"
-              inputMode="numeric"
-              className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-3 text-base outline-none placeholder:text-neutral-500 focus:border-[#f5c542]"
-            />
-            <span className="mt-1 block text-xs text-neutral-400">
-              Come back with the same ID any time to upload your remaining photos.
-            </span>
-          </label>
-
-          <div className="rounded-lg border border-[#f5c542]/60 bg-[#f5c542]/10 p-3 text-sm">
-            <p className="font-semibold">Before you upload</p>
-            <p className="mt-1 text-neutral-200">
-              Photos you upload can be seen and downloaded by other people at this event, and are shown on
-              the big screen with your name. Only upload photos you are happy to share.
-            </p>
-            <label className="mt-3 flex items-start gap-2">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 h-5 w-5"
-              />
-              <span>I understand and agree.</span>
-            </label>
-          </div>
-
-          {formError && <p className="text-sm text-red-300">{formError}</p>}
-          <button
-            disabled={registering}
-            className="w-full rounded-full bg-[#f5c542] px-6 py-3 text-base font-semibold text-black disabled:opacity-60"
+        <header className="mt-6 text-center">
+          <p className={`${display.className} text-xl italic text-[#e8c77f]`}>College Night</p>
+          <h1
+            className={`${display.className} text-4xl font-bold leading-none sm:text-5xl`}
+            style={{
+              background: 'linear-gradient(180deg,#f6e3b4,#d9b26a 55%,#a97c3a)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+            }}
           >
-            {registering ? 'Checking…' : 'Continue'}
-          </button>
-        </form>
-      ) : (
-        <section className="mt-6 space-y-4">
-          <div className="rounded-lg bg-white/10 p-3">
-            <p className="font-semibold">Hi {student.name}</p>
-            <p className="text-sm text-neutral-300">
-              {MAX_PHOTOS - remaining} of {MAX_PHOTOS} photos used. <strong>{remaining} remaining.</strong>
-            </p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15">
-              <div
-                className="h-full bg-[#f5c542] transition-all"
-                style={{ width: `${((MAX_PHOTOS - remaining) / MAX_PHOTOS) * 100}%` }}
-              />
-            </div>
-            {!uploading && (
-              <button
-                onClick={() => {
-                  items.forEach((i) => URL.revokeObjectURL(i.preview));
-                  setItems([]);
-                  setStudent(null);
-                  setNotice(null);
-                }}
-                className="mt-2 text-xs text-neutral-300 underline"
-              >
-                Not you? Use a different ID
+            {EVENT_NAME}
+          </h1>
+          <div className="mt-3">
+            <Ornament />
+          </div>
+          <p className="mt-3 text-sm text-[#f4e9d8]/75">Upload up to {MAX_PHOTOS} photos per student.</p>
+        </header>
+
+        <div className="mt-6 flex-1">
+          {!student ? (
+            <form onSubmit={register} className="space-y-4">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">Full name</span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  className={INPUT}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">Student ID</span>
+                <input
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  placeholder="24-2157-703"
+                  inputMode="numeric"
+                  className={INPUT}
+                />
+                <span className="mt-1 block text-xs text-[#f4e9d8]/55">
+                  Come back with the same ID any time to upload your remaining photos.
+                </span>
+              </label>
+
+              <div className="rounded-lg border border-[#d9b26a]/45 bg-[#8f1226]/20 p-4 text-sm">
+                <p className={`${display.className} text-lg font-semibold italic text-[#e8c77f]`}>Before you upload</p>
+                <p className="mt-1 text-[#f4e9d8]/85">
+                  Photos you upload can be seen and downloaded by other people at this event, and are shown on
+                  the big screen with your name. Only upload photos you are happy to share.
+                </p>
+                <label className="mt-3 flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 accent-[#d9b26a]"
+                  />
+                  <span>I understand and agree.</span>
+                </label>
+              </div>
+
+              {formError && <p className="text-sm text-[#ff9aa8]">{formError}</p>}
+              <button disabled={registering} className={GOLD_BTN}>
+                {registering ? 'Checking…' : 'Continue'}
               </button>
-            )}
-          </div>
-
-          {remaining > 0 ? (
-            <label
-              className={`block cursor-pointer rounded-lg border-2 border-dashed border-white/30 p-5 text-center ${
-                capacity === 0 || uploading ? 'pointer-events-none opacity-50' : ''
-              }`}
-            >
-              <span className="font-semibold">Choose photos</span>
-              <span className="mt-1 block text-sm text-neutral-300">
-                JPEG, PNG or WebP, up to 15 MB each. You can add {capacity} more.
-              </span>
-              <input
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                onChange={onPick}
-                className="sr-only"
-              />
-            </label>
+            </form>
           ) : (
-            <p className="rounded-lg bg-white/10 p-3 text-sm">
-              You have used all {MAX_PHOTOS} photos. Thank you for sharing.
-            </p>
-          )}
+            <section className="space-y-4">
+              <div className="rounded-lg border border-[#d9b26a]/30 bg-black/35 p-4">
+                <p className={`${display.className} text-2xl font-semibold italic`}>Hi {student.name}</p>
+                <p className="text-sm text-[#f4e9d8]/75">
+                  {MAX_PHOTOS - remaining} of {MAX_PHOTOS} photos used. <strong className="text-[#e8c77f]">{remaining} remaining.</strong>
+                </p>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#b3122b] to-[#e8c77f] transition-all"
+                    style={{ width: `${((MAX_PHOTOS - remaining) / MAX_PHOTOS) * 100}%` }}
+                  />
+                </div>
+                {!uploading && (
+                  <button
+                    onClick={() => {
+                      items.forEach((i) => URL.revokeObjectURL(i.preview));
+                      setItems([]);
+                      setStudent(null);
+                      setNotice(null);
+                    }}
+                    className="mt-2 text-xs text-[#f4e9d8]/70 underline underline-offset-4"
+                  >
+                    Not you? Use a different ID
+                  </button>
+                )}
+              </div>
 
-          {items.length > 0 && (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {items.map((i) => (
-                <li key={i.id} className="overflow-hidden rounded-lg bg-white/10">
-                  <div className="relative aspect-square">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={i.preview} alt="" className="h-full w-full object-cover" />
-                    {i.status === 'done' && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-semibold">
-                        Uploaded
-                      </span>
-                    )}
-                    {i.status === 'queued' && !uploading && (
-                      <button
-                        onClick={() => removeItem(i.id)}
-                        aria-label="Remove photo"
-                        className="absolute right-1 top-1 h-8 w-8 rounded-full bg-black/70 text-lg leading-none"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                  <div className="p-2 text-xs">
-                    {i.status === 'uploading' && (
-                      <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
-                        <div className="h-full bg-[#f5c542]" style={{ width: `${Math.round(i.progress * 100)}%` }} />
+              {remaining > 0 ? (
+                <label
+                  className={`block cursor-pointer rounded-lg border-2 border-dashed border-[#d9b26a]/45 bg-black/25 p-6 text-center transition-colors hover:border-[#e8c77f] focus-within:border-[#e8c77f] ${
+                    capacity === 0 || uploading ? 'pointer-events-none opacity-50' : ''
+                  }`}
+                >
+                  <span className={`${display.className} text-2xl font-semibold italic text-[#e8c77f]`}>Choose photos</span>
+                  <span className="mt-1 block text-sm text-[#f4e9d8]/75">
+                    JPEG, PNG or WebP, up to 15 MB each. You can add {capacity} more.
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={onPick}
+                    className="sr-only"
+                  />
+                </label>
+              ) : (
+                <p className="rounded-lg border border-[#d9b26a]/30 bg-black/35 p-4 text-sm">
+                  You have used all {MAX_PHOTOS} photos. Thank you for sharing.
+                </p>
+              )}
+
+              {items.length > 0 && (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {items.map((i) => (
+                    <li key={i.id} className="overflow-hidden rounded-[3px] bg-[#f4e9d8] p-1 text-[#2a0a10] shadow-[0_6px_18px_rgba(0,0,0,.6)]">
+                      <div className="relative aspect-square overflow-hidden bg-[#2a0a10]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={i.preview} alt="" className="h-full w-full object-cover" />
+                        {i.status === 'done' && (
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm font-semibold text-[#e8c77f]">
+                            Uploaded
+                          </span>
+                        )}
+                        {i.status === 'queued' && !uploading && (
+                          <button
+                            onClick={() => removeItem(i.id)}
+                            aria-label="Remove photo"
+                            className="absolute right-1 top-1 h-8 w-8 rounded-full bg-black/75 text-lg leading-none text-[#f4e9d8]"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
-                    )}
-                    {i.status === 'queued' && <span className="text-neutral-300">Ready</span>}
-                    {i.status === 'error' && <span className="text-red-300">{i.error}</span>}
-                    {i.status === 'uploading' && <span className="mt-1 block text-neutral-300">Uploading…</span>}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                      <div className="px-1 py-1.5 text-xs">
+                        {i.status === 'uploading' && (
+                          <div className="h-1.5 overflow-hidden rounded-full bg-[#2a0a10]/20">
+                            <div className="h-full bg-[#b3122b]" style={{ width: `${Math.round(i.progress * 100)}%` }} />
+                          </div>
+                        )}
+                        {i.status === 'queued' && <span className="text-[#2a0a10]/70">Ready</span>}
+                        {i.status === 'error' && <span className="text-[#a1111f]">{i.error}</span>}
+                        {i.status === 'uploading' && <span className="mt-1 block text-[#2a0a10]/70">Uploading…</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
-          {notice && (
-            <p className={`text-sm ${notice.kind === 'ok' ? 'text-green-300' : 'text-red-300'}`}>{notice.text}</p>
-          )}
+              {notice && (
+                <p className={`text-sm ${notice.kind === 'ok' ? 'text-[#9ee6b0]' : 'text-[#ff9aa8]'}`}>{notice.text}</p>
+              )}
 
-          <button
-            onClick={startUpload}
-            disabled={uploading || queuedCount === 0}
-            className="w-full rounded-full bg-[#f5c542] px-6 py-3 text-base font-semibold text-black disabled:opacity-50"
-          >
-            {uploading ? 'Uploading… keep this page open' : `Upload photos${queuedCount ? ` (${queuedCount})` : ''}`}
-          </button>
-        </section>
-      )}
+              <button onClick={startUpload} disabled={uploading || queuedCount === 0} className={GOLD_BTN}>
+                {uploading ? 'Uploading… keep this page open' : `Upload photos${queuedCount ? ` (${queuedCount})` : ''}`}
+              </button>
+            </section>
+          )}
+        </div>
+
+        <footer className={`${display.className} mt-10 text-center text-base italic text-[#e8c77f]`}>
+          Built by MSD-2026
+        </footer>
+      </div>
     </main>
   );
 }
